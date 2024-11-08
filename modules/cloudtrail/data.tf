@@ -75,7 +75,7 @@ data "aws_iam_policy_document" "cmk_cloudtrail_policy" {
       identifiers = ["cloudtrail.amazonaws.com"]
     }
     effect    = "Allow"
-    actions   = "kms:Decrypt"
+    actions   = ["kms:Decrypt"]
     resources = ["*"]
   }
 
@@ -96,73 +96,34 @@ data "aws_iam_policy_document" "cmk_cloudtrail_policy" {
   }
 }
 
-# Trust policy for the CloudWatch Logs Role ARN.
-data "aws_iam_policy_document" "cloudwatch_logs_role_policy_document" {
+# Trust policy for the CloudTrail Role.
+data "aws_iam_policy_document" "cloudtrail_role_trust_policy" {
   statement {
     principals {
       type        = "Service"
-      identifiers = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+      identifiers = ["cloudtrail.amazonaws.com"]
     }
-    effect  = ["Allow"]
+    effect  = "Allow"
     actions = ["sts:AssumeRole"]
   }
 }
 
-# Policy document for the CloudWatch role inline policy.
-# This policy is used to decrypt the CloudTrail CMK
-data "aws_iam_policy_document" "cloudwatch_logs_policy" {
+# Policy document for the CloudTrail role inline policy.
+# This policy is used to publish to CloudWatch and to decrypt the CloudWatch KMS key.
+data "aws_iam_policy_document" "cloudtrail_cloudwatch_logs_policy" {
   statement {
-    effect    = ["Allow"]
+    effect    = "Allow"
     actions   = ["logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["${aws_cloudwatch_log_group.cloudtrail_log_group.arn}:log-stream:*"]
+    resources = ["${aws_cloudwatch_log_group.cloudtrail_read_log_group.arn}:log-stream:*", "${aws_cloudwatch_log_group.cloudtrail_write_log_group.arn}:log-stream:*"]
   }
   statement {
-    effect    = ["Allow"]
+    effect    = "Allow"
     actions   = ["kms:Decrypt"]
-    resources = [aws_kms_key.cmk_cloudtrail.arn]
+    resources = [aws_kms_key.cmk_cloudwatch_logs.arn]
   }
 }
-# Bucket policy for the CloudTrail events bucket
-data "aws_iam_policy_document" "cloudtrail_bucket_policy" {
-  statement {
-    sid    = "AWSCloudTrailAclCheck"
-    effect = "Allow"
 
-    principals {
-      type        = "Service"
-      identifiers = ["cloudtrail.amazonaws.com"]
-    }
-
-    actions   = ["s3:GetBucketAcl"]
-    resources = [aws_s3_bucket.cloudtrail_events.arn]
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceArn"
-      values   = ["arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/"]
-    }
-  }
-
-  statement {
-    sid    = "AWSCloudTrailWrite"
-    effect = "Allow"
-
-    principals {
-      type        = "Service"
-      identifiers = ["cloudtrail.amazonaws.com"]
-    }
-
-    actions   = ["s3:PutObject"]
-    resources = ["${aws_s3_bucket.cloudtrail_events.arn}/prefix/AWSLogs/${data.aws_caller_identity.current.account_id}/*"]
-
-    condition {
-      test     = "StringEquals"
-      variable = "s3:x-amz-acl"
-      values   = ["bucket-owner-full-control"]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceArn"
-      values   = ["arn:aws:cloudtrail:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:trail/"]
-    }
-  }
+# Fetch the bucket specified in the variables
+data "aws_s3_bucket" "cloudtrail" {
+  bucket = var.bucket_name
 }

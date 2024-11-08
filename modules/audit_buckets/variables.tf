@@ -13,7 +13,9 @@ variable "aws_tags" {
 }
 
 # Module Variables
-variable "bucket_name" {
-  description = "The name of the S3 bucket in which to store CloudTrail events."
-  type        = string
+variable "debug_mode" {
+  description = "Whether to create the audit bucket in debug mode. (Destructable)"
+  type        = bool
+  default     = false
 }
+

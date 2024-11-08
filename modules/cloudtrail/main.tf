@@ -2,8 +2,15 @@
 resource "aws_kms_key" "cmk_cloudwatch_logs" {
   description             = "KMS key used for encrypting CloudWatch logs."
   enable_key_rotation     = true
-  rotation_period_in_days = 30
+  rotation_period_in_days = 90
   deletion_window_in_days = 30
+  tags = merge(
+    {
+      Name = "cloudwatch/logs"
+      TFID = var.id
+    },
+    var.aws_tags
+  )
 }
 
 resource "aws_kms_key_policy" "cmk_cloudwatch_logs_policy" {
@@ -12,7 +19,7 @@ resource "aws_kms_key_policy" "cmk_cloudwatch_logs_policy" {
 }
 
 resource "aws_kms_alias" "cmk_cloudwatch_logs_alias" {
-  name          = "alias/noodle/cloudwatch/logs"
+  name          = "alias/cloudwatch/logs"
   target_key_id = aws_kms_key.cmk_cloudwatch_logs.key_id
 }
 
@@ -20,8 +27,14 @@ resource "aws_kms_alias" "cmk_cloudwatch_logs_alias" {
 resource "aws_kms_key" "cmk_cloudtrail" {
   description             = "KMS key used for encrypting CloudTrail events."
   enable_key_rotation     = true
-  rotation_period_in_days = 30
+  rotation_period_in_days = 90
   deletion_window_in_days = 30
+  tags = merge({
+    Name = "cloudtrail"
+    TFID = var.id
+    },
+    var.aws_tags
+  )
 }
 
 resource "aws_kms_key_policy" "cmk_cloudtrail_policy" {
@@ -30,82 +43,107 @@ resource "aws_kms_key_policy" "cmk_cloudtrail_policy" {
 }
 
 resource "aws_kms_alias" "cmk_cloudtrail_alias" {
-  name          = "alias/noodle/cloudtrail"
+  name          = "alias/cloudtrail"
   target_key_id = aws_kms_key.cmk_cloudtrail.key_id
 }
 
 # Create a CloudWatch log group that is used for publishing CloudTrail events.
-resource "aws_cloudwatch_log_group" "cloudtrail_log_group" {
-  name              = "cloudtrail"
-  retention_in_days = 30
-  kms_key_id        = aws_kms_key.cloudwatch_logs.key_id
+resource "aws_cloudwatch_log_group" "cloudtrail_write_log_group" {
+  name              = "cloudtrail/write"
+  retention_in_days = 365
+  kms_key_id        = aws_kms_key.cmk_cloudwatch_logs.arn
+  tags = merge({
+    Name = "cloudtrail/write"
+    TFID = var.id
+    },
+    var.aws_tags
+  )
 }
 
+resource "aws_cloudwatch_log_group" "cloudtrail_read_log_group" {
+  name              = "cloudtrail/read"
+  retention_in_days = 365
+  kms_key_id        = aws_kms_key.cmk_cloudwatch_logs.arn
+  tags = merge({
+    Name = "cloudtrail/read"
+    TFID = var.id
+    },
+    var.aws_tags
+  )
+}
+
+# Grant CloudTrail access to publish to CloudWatch logs.
 resource "aws_iam_role" "cloudtrail_role" {
-  name               = "CloudTrailRole"
-  description        = "Role that is assumed by CloudTrail to log to CloudWatch logs."
-  assume_role_policy = data.aws_iam_policy_document.cloudtrail_trust_policy.json
+  name_prefix        = "CloudTrailRole_"
+  description        = "Role that is assumed by CloudTrail to publish CloudWatch logs."
+  assume_role_policy = data.aws_iam_policy_document.cloudtrail_role_trust_policy.json
+  tags = merge({
+    Name = "CloudTrailRole"
+    TFID = var.id
+    },
+    var.aws_tags
+  )
 }
 
-resource "aws_iam_policy" "cloudwatch_inline_policy" {
-  name        = "CloudTrailCloudWatchLogsWriteAccess"
+resource "aws_iam_policy" "cloudtrail_inline_policy" {
+  name_prefix = "CloudTrailCloudWatchLogsWriteAccess_"
   description = "Grants access to the CloudWatch Logs group for CloudTrail."
-  policy      = data.aws_iam_policy_document.cloudtrail_cloudwatch_policy.json
+  policy      = data.aws_iam_policy_document.cloudtrail_cloudwatch_logs_policy.json
+  tags = merge({
+    Name = "CloudTrailCloudWatchLogsWriteAccess"
+    TFID = var.id
+    },
+    var.aws_tags
+  )
+}
+
+resource "aws_iam_role_policy_attachment" "cloudtrail_inline_policy_attachment" {
+  role       = aws_iam_role.cloudtrail_role.name
+  policy_arn = aws_iam_policy.cloudtrail_inline_policy.arn
 }
 
 # Create the main CloudTrail
-resource "aws_cloudtrail" "management_events" {
-  depends_on                    = [aws_s3_bucket_policy.cloudtrail_events_policy]
-  name                          = "cloudtrail"
-  s3_bucket_name                = aws_s3_bucket.cloudtrail_events.id
+resource "aws_cloudtrail" "cloudtrail_write" {
+  name                          = "cloudtrail-write"
+  s3_bucket_name                = data.aws_s3_bucket.cloudtrail.id
   include_global_service_events = true
   enable_log_file_validation    = true
+  enable_logging                = true
+  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail_write_log_group.arn}:*"
+  cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_role.arn
+  kms_key_id                    = aws_kms_key.cmk_cloudtrail.arn
+  is_multi_region_trail         = true
   event_selector {
     include_management_events = true
     read_write_type           = "WriteOnly"
   }
-  cloud_watch_logs_group_arn = "${aws_cloudwatch_log_group.cloudtrail.arn}/*"
-  cloud_watch_logs_role_arn  = aws_iam_role.cloudtrail_role.arn
-  kms_key_id                 = aws_kms_key.cloudtrail.key_id
+  tags = merge({
+    Name = "cloudtrail-write"
+    TFID = var.id
+    },
+    var.aws_tags
+  )
 }
-
-resource "aws_s3_bucket" "cloudtrail_events" {
-  bucket_prefix = "aws-cloudtrail"
-}
-
-resource "aws_s3_bucket_policy" "cloudtrail_events_policy" {
-  bucket = aws_s3_bucket.cloudtrail_events.id
-  policy = data.aws_iam_policy_document.cloudtrail.json
-}
-
-resource "aws_s3_bucket_versioning" "cloudtrail_events_versioning" {
-  bucket = aws_s3_bucket.cloudtrail_events.id
-  versioning_configuration {
-    status = "Enabled"
+resource "aws_cloudtrail" "cloudtrail_read" {
+  name                          = "cloudtrail-read"
+  s3_bucket_name                = data.aws_s3_bucket.cloudtrail.id
+  include_global_service_events = true
+  enable_log_file_validation    = true
+  enable_logging                = true
+  cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.cloudtrail_read_log_group.arn}:*"
+  cloud_watch_logs_role_arn     = aws_iam_role.cloudtrail_role.arn
+  kms_key_id                    = aws_kms_key.cmk_cloudtrail.arn
+  is_multi_region_trail         = true
+  event_selector {
+    include_management_events = true
+    read_write_type           = "ReadOnly"
   }
+  tags = merge({
+    Name = "cloudtrail-read"
+    TFID = var.id
+    },
+    var.aws_tags
+  )
 }
 
 
-resource "aws_s3_bucket_lifecycle_configuration" "cloudtrail_events_lifecycle" {
-  bucket = aws_s3_bucket.cloudtrail_events.id
-  rule {
-    id     = "expire"
-    status = "Enabled"
-    expiration {
-      days = 2556
-    }
-    noncurrent_version_expiration {
-      noncurrent_days = 30
-    }
-  }
-}
-
-resource "aws_s3_bucket_object_lock_configuration" "cloudtrail_object_lock" {
-  bucket = aws_s3_bucket.cloudtrail_events.id
-  rule {
-    default_retention {
-      mode  = "COMPLIANCE"
-      years = 7
-    }
-  }
-}

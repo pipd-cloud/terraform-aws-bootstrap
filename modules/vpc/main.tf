@@ -28,7 +28,7 @@ resource "aws_subnet" "public_subnets" {
   vpc_id                  = aws_vpc.vpc.id
   availability_zone       = data.aws_availability_zones.az.names[count.index]
   cidr_block              = module.subnet_addrs.networks[count.index].cidr_block
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
   tags = merge(
     {
       Name = "${var.id}-vpc-public-subnet-${count.index + 1}-${data.aws_availability_zones.az.names[count.index]}", Access = "public"

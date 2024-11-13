@@ -83,8 +83,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "audit_lifecycle_config" {
 }
 
 resource "aws_s3_bucket_object_lock_configuration" "audit_object_lock_config" {
-  for_each = !var.debug_mode ? { cloudtrail = aws_s3_bucket.cloudtrail, flow_logs = aws_s3_bucket.flow_logs, s3_access_logs = aws_s3_bucket.s3_access_logs } : {}
-  bucket   = each.value.id
+  depends_on = [aws_s3_bucket_versioning.audit_versioning_config]
+  for_each   = !var.debug_mode ? { cloudtrail = aws_s3_bucket.cloudtrail, flow_logs = aws_s3_bucket.flow_logs, s3_access_logs = aws_s3_bucket.s3_access_logs } : {}
+  bucket     = each.value.id
   rule {
     default_retention {
       mode  = "COMPLIANCE"

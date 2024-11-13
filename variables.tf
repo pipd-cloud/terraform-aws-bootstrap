@@ -13,6 +13,7 @@ variable "aws_tags" {
 }
 
 # Module Variables
+## VPC
 variable "vpc_network_address" {
   type        = string
   default     = "10.0.0.0"
@@ -56,3 +57,33 @@ variable "vpc_nat_multi_az" {
     error_message = "You must enable NAT if you want to set multi AZ for NAT gateways."
   }
 }
+
+## OIDC
+variable "oidc_github_organization" {
+  description = "The GitHub organization that owns the repositories of interest."
+  type        = string
+}
+
+variable "oidc_github_repo" {
+  description = "The GitHub repository that may be used in automated deployments."
+  type        = string
+  default     = "*"
+}
+
+variable "oidc_hcp_terraform_organization" {
+  description = "The HCP Terraform organization that may be used in automated deployments."
+  type        = string
+}
+
+variable "oidc_hcp_terraform_project" {
+  description = "The HCP Terraform project that may be used in automated deployments."
+  type        = string
+  default     = "*"
+}
+
+variable "oidc_hcp_terraform_workspace" {
+  description = "The HCP Terraform workspace that may be used in automated deployments."
+  type        = string
+  default     = "*"
+}
+

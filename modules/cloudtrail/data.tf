@@ -1,6 +1,6 @@
 data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
 
+data "aws_region" "current" {}
 
 # KMS key policy for the CloudWatch Logs CMK
 data "aws_iam_policy_document" "cmk_cloudwatch_logs_policy" {

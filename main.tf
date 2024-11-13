@@ -4,6 +4,7 @@ module "audit_buckets" {
   aws_tags   = var.aws_tags
   debug_mode = true
 }
+
 module "cloudtrail" {
   source      = "./modules/cloudtrail"
   id          = var.id
@@ -22,4 +23,15 @@ module "vpc" {
   vpc_subnets         = var.vpc_subnets
   nat                 = var.vpc_nat
   nat_multi_az        = var.vpc_nat_multi_az
+}
+
+module "oidc" {
+  source                     = "./modules/oidc"
+  id                         = var.id
+  aws_tags                   = var.aws_tags
+  github_organization        = var.oidc_github_organization
+  github_repo                = var.oidc_github_repo
+  hcp_terraform_organization = var.oidc_hcp_terraform_organization
+  hcp_terraform_project      = var.oidc_hcp_terraform_project
+  hcp_terraform_workspace    = var.oidc_hcp_terraform_workspace
 }

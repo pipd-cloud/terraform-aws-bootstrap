@@ -6,7 +6,7 @@ resource "aws_kms_key" "cmk_cloudwatch_logs" {
   deletion_window_in_days = 30
   tags = merge(
     {
-      Name = "cloudwatch/logs"
+      Name = "${var.id}/cloudwatch/logs"
       TFID = var.id
     },
     var.aws_tags
@@ -19,7 +19,7 @@ resource "aws_kms_key_policy" "cmk_cloudwatch_logs_policy" {
 }
 
 resource "aws_kms_alias" "cmk_cloudwatch_logs_alias" {
-  name          = "alias/cloudwatch/logs"
+  name          = "alias/${var.id}/cloudwatch/logs"
   target_key_id = aws_kms_key.cmk_cloudwatch_logs.key_id
 }
 
@@ -30,7 +30,7 @@ resource "aws_kms_key" "cmk_cloudtrail" {
   rotation_period_in_days = 90
   deletion_window_in_days = 30
   tags = merge({
-    Name = "cloudtrail"
+    Name = "${var.id}/cloudtrail"
     TFID = var.id
     },
     var.aws_tags
@@ -43,13 +43,13 @@ resource "aws_kms_key_policy" "cmk_cloudtrail_policy" {
 }
 
 resource "aws_kms_alias" "cmk_cloudtrail_alias" {
-  name          = "alias/cloudtrail"
+  name          = "alias/${var.id}/cloudtrail"
   target_key_id = aws_kms_key.cmk_cloudtrail.key_id
 }
 
 # Create a CloudWatch log group that is used for publishing CloudTrail events.
 resource "aws_cloudwatch_log_group" "cloudtrail_write_log_group" {
-  name              = "cloudtrail/write"
+  name              = "cloudtrail/${var.id}/write"
   retention_in_days = 365
   kms_key_id        = aws_kms_key.cmk_cloudwatch_logs.arn
   tags = merge({
@@ -61,7 +61,7 @@ resource "aws_cloudwatch_log_group" "cloudtrail_write_log_group" {
 }
 
 resource "aws_cloudwatch_log_group" "cloudtrail_read_log_group" {
-  name              = "cloudtrail/read"
+  name              = "cloudtrail/${var.id}/read"
   retention_in_days = 365
   kms_key_id        = aws_kms_key.cmk_cloudwatch_logs.arn
   tags = merge({
@@ -104,7 +104,7 @@ resource "aws_iam_role_policy_attachment" "cloudtrail_inline_policy_attachment" 
 
 # Create the main CloudTrail
 resource "aws_cloudtrail" "cloudtrail_write" {
-  name                          = "cloudtrail-write"
+  name                          = "${var.id}-cloudtrail-write"
   s3_bucket_name                = data.aws_s3_bucket.cloudtrail.id
   include_global_service_events = true
   enable_log_file_validation    = true
@@ -118,14 +118,14 @@ resource "aws_cloudtrail" "cloudtrail_write" {
     read_write_type           = "WriteOnly"
   }
   tags = merge({
-    Name = "cloudtrail-write"
+    Name = "${var.id}-cloudtrail-write"
     TFID = var.id
     },
     var.aws_tags
   )
 }
 resource "aws_cloudtrail" "cloudtrail_read" {
-  name                          = "cloudtrail-read"
+  name                          = "${var.id}-cloudtrail-read"
   s3_bucket_name                = data.aws_s3_bucket.cloudtrail.id
   include_global_service_events = true
   enable_log_file_validation    = true
@@ -139,7 +139,7 @@ resource "aws_cloudtrail" "cloudtrail_read" {
     read_write_type           = "ReadOnly"
   }
   tags = merge({
-    Name = "cloudtrail-read"
+    Name = "${var.id}-cloudtrail-read"
     TFID = var.id
     },
     var.aws_tags

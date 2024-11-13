@@ -11,6 +11,12 @@ module "cloudtrail" {
   bucket_name = module.audit_buckets.cloudtrail_bucket.id
 }
 
+module "cost" {
+  source   = "./modules/cost"
+  id       = var.id
+  aws_tags = var.aws_tags
+}
+
 module "vpc" {
   source              = "./modules/vpc"
   id                  = var.id

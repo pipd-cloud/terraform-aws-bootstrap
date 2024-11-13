@@ -41,3 +41,13 @@ output "cloudtrail_read_trail" {
   value       = module.cloudtrail.cloudtrail_read_trail
 }
 
+output "cloudtrail_write_log_group" {
+  description = "The Write-Only CloudTrail log group."
+  value       = module.cloudtrail.cloudtrail_write_log_group
+}
+
+output "cloudtrail_read_log_group" {
+  description = "The Read-Only CloudTrail log group."
+  value       = module.cloudtrail.cloudtrail_read_log_group
+}
+

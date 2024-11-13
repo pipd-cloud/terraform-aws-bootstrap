@@ -3,6 +3,9 @@ resource "aws_costoptimizationhub_enrollment_status" "enable" {}
 resource "aws_computeoptimizer_enrollment_status" "enable" {
   status                  = "Active"
   include_member_accounts = false
+  lifecycle {
+    ignore_changes = [status]
+  }
 }
 
 resource "aws_resourceexplorer2_index" "local" {
@@ -15,6 +18,6 @@ resource "aws_resourceexplorer2_view" "local" {
   tags         = var.aws_tags
   default_view = true
   included_property {
-    name = "tag"
+    name = "tags"
   }
 }

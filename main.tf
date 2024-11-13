@@ -1,8 +1,7 @@
 module "audit_buckets" {
-  source     = "./modules/audit_buckets"
-  id         = var.id
-  aws_tags   = var.aws_tags
-  debug_mode = true
+  source   = "./modules/audit_buckets"
+  id       = var.id
+  aws_tags = var.aws_tags
 }
 
 module "cloudtrail" {

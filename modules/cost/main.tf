@@ -1,6 +1,4 @@
-resource "aws_costoptimizationhub_enrollment_status" "enable" {
-  include_member_accounts = false
-}
+resource "aws_costoptimizationhub_enrollment_status" "enable" {}
 
 resource "aws_computeoptimizer_enrollment_status" "enable" {
   status                  = "Active"

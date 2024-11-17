@@ -1,9 +1,12 @@
+locals {
+  bucket_id = length(var.id) <= 14 ? var.id : substr(var.id, 0, 14)
+}
 resource "aws_s3_bucket" "cloudtrail" {
-  bucket_prefix = "${var.id}-cloudtrail-bucket-"
+  bucket_prefix = "${local.bucket_id}-cloudtrail-bucket-"
   force_destroy = !var.debug_mode
   tags = merge(
     {
-      Name = "${var.id}-cloudtrail-bucket"
+      Name = "${local.bucket_id}-cloudtrail-bucket"
       TFID = "${var.id}"
     },
     var.aws_tags
@@ -11,11 +14,11 @@ resource "aws_s3_bucket" "cloudtrail" {
 }
 
 resource "aws_s3_bucket" "flow_logs" {
-  bucket_prefix = "${var.id}-flow-logs-bucket-"
+  bucket_prefix = "${local.bucket_id}-flow-logs-bucket-"
   force_destroy = !var.debug_mode
   tags = merge(
     {
-      Name = "${var.id}-flow-logs-bucket"
+      Name = "${local.bucket_id}-flow-logs-bucket"
       TFID = "${var.id}"
     },
     var.aws_tags
@@ -23,11 +26,11 @@ resource "aws_s3_bucket" "flow_logs" {
 }
 
 resource "aws_s3_bucket" "s3_access_logs" {
-  bucket_prefix = "${var.id}-s3-access-logs-bucket-"
+  bucket_prefix = "${local.bucket_id}-s3-access-logs-bucket-"
   force_destroy = !var.debug_mode
   tags = merge(
     {
-      Name = "${var.id}-s3-access-logs-bucket"
+      Name = "${local.bucket_id}-s3-access-logs-bucket"
       TFID = "${var.id}"
     },
     var.aws_tags

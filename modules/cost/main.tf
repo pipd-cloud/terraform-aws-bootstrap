@@ -11,6 +11,7 @@ resource "aws_resourceexplorer2_index" "local" {
 }
 
 resource "aws_resourceexplorer2_view" "local" {
+  depends_on   = [aws_resourceexplorer2_index.local]
   name         = "aws-resources"
   tags         = var.aws_tags
   default_view = true

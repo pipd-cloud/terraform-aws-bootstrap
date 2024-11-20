@@ -4,6 +4,9 @@ locals {
 resource "aws_s3_bucket" "cloudtrail" {
   bucket_prefix = "${local.bucket_id}-cloudtrail-bucket-"
   force_destroy = !var.debug_mode
+  lifecycle {
+    prevent_destroy = var.debug_mode
+  }
   tags = merge(
     {
       Name = "${local.bucket_id}-cloudtrail-bucket"
@@ -16,6 +19,9 @@ resource "aws_s3_bucket" "cloudtrail" {
 resource "aws_s3_bucket" "flow_logs" {
   bucket_prefix = "${local.bucket_id}-flow-logs-bucket-"
   force_destroy = !var.debug_mode
+  lifecycle {
+    prevent_destroy = var.debug_mode
+  }
   tags = merge(
     {
       Name = "${local.bucket_id}-flow-logs-bucket"
@@ -28,6 +34,9 @@ resource "aws_s3_bucket" "flow_logs" {
 resource "aws_s3_bucket" "s3_access_logs" {
   bucket_prefix = "${local.bucket_id}-s3-access-logs-bucket-"
   force_destroy = !var.debug_mode
+  lifecycle {
+    prevent_destroy = var.debug_mode
+  }
   tags = merge(
     {
       Name = "${local.bucket_id}-s3-access-logs-bucket"

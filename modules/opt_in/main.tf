@@ -6,7 +6,7 @@ resource "aws_computeoptimizer_enrollment_status" "enable" {
 }
 
 resource "aws_resourceexplorer2_index" "local" {
-  type = "LOCAL"
+  type = "AGGREGATOR"
   tags = var.aws_tags
 }
 

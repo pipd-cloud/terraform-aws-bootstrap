@@ -30,6 +30,16 @@ module "vpc" {
   nat_multi_az        = var.vpc_nat_multi_az
 }
 
+module "tgw" {
+  count     = var.tgw != null ? 1 : 0
+  source    = "./modules/tgw"
+  id        = var.id
+  aws_tags  = var.aws_tags
+  vpc       = module.vpc.vpc.id
+  tgw       = var.tgw
+  tgw_route = var.tgw_route
+}
+
 module "oidc" {
   source                     = "./modules/oidc"
   id                         = var.id

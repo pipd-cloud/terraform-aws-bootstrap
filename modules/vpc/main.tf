@@ -91,13 +91,8 @@ resource "aws_route_table_association" "public_rtb_assoc" {
 }
 
 resource "aws_route_table_association" "private_rtb_assoc" {
-  count          = !var.nat ? length(aws_subnet.private_subnets) : 0
+  count          = length(aws_subnet.private_subnets)
   route_table_id = aws_route_table.private_rtb[count.index].id
-  subnet_id      = aws_subnet.private_subnets[count.index].id
-}
-resource "aws_route_table_association" "private_rtb_assoc_nat" {
-  count          = var.nat ? length(aws_subnet.private_subnets) : 0
-  route_table_id = aws_route_table.private_rtb_nat[count.index].id
   subnet_id      = aws_subnet.private_subnets[count.index].id
 }
 

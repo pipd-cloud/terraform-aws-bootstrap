@@ -53,10 +53,6 @@ resource "aws_subnet" "private_subnets" {
 resource "aws_route_table" "public_rtb" {
   count  = length(aws_subnet.public_subnets) > 0 ? 1 : 0
   vpc_id = aws_vpc.vpc.id
-  route {
-    gateway_id = aws_internet_gateway.igw[0].id
-    cidr_block = "0.0.0.0/0"
-  }
   tags = merge(
     {
       Name = "${var.id}-vpc-public-rtb", Access = "public"
@@ -64,13 +60,16 @@ resource "aws_route_table" "public_rtb" {
   }, var.aws_tags)
 }
 
-resource "aws_route_table" "private_rtb_nat" {
-  count  = var.nat ? length(aws_subnet.private_subnets) : 0
+resource "aws_route" "public_igw" {
+  count                  = length(aws_subnet.public_subnets) > 0 ? 1 : 0
+  route_table_id         = aws_route_table.public_rtb[0].id
+  gateway_id             = aws_internet_gateway.igw[0].id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+resource "aws_route_table" "private_rtb" {
+  count  = length(aws_subnet.private_subnets)
   vpc_id = aws_vpc.vpc.id
-  route {
-    nat_gateway_id = var.nat_multi_az ? aws_nat_gateway.nat_gw[count.index].id : aws_nat_gateway.nat_gw[0].id
-    cidr_block     = "0.0.0.0/0"
-  }
   tags = merge(
     {
       Name = "${var.id}-vpc-private-rtb-${count.index + 1}-${aws_subnet.private_subnets[count.index].availability_zone}", Access = "private"
@@ -78,14 +77,11 @@ resource "aws_route_table" "private_rtb_nat" {
   }, var.aws_tags)
 }
 
-resource "aws_route_table" "private_rtb" {
-  count  = !var.nat ? length(aws_subnet.private_subnets) : 0
-  vpc_id = aws_vpc.vpc.id
-  tags = merge(
-    {
-      Name = "${var.id}-vpc-private-rtb-${count.index + 1}-${aws_subnet.private_subnets[count.index].availability_zone}", Access = "private"
-      TFID = var.id
-  }, var.aws_tags)
+resource "aws_route" "private_nat" {
+  count                  = var.nat ? length(aws_subnet.private_subnets) : 0
+  route_table_id         = aws_route_table.private_rtb[count.index].id
+  nat_gateway_id         = var.nat_multi_az ? aws_nat_gateway.nat_gw[count.index].id : aws_nat_gateway.nat_gw[0].id
+  destination_cidr_block = "0.0.0.0/0"
 }
 
 resource "aws_route_table_association" "public_rtb_assoc" {

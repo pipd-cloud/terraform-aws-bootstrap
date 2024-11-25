@@ -87,3 +87,21 @@ variable "oidc_hcp_terraform_workspace" {
   default     = "*"
 }
 
+## TGW
+variable "tgw" {
+  description = "The ID of the external transit gateway to associate with a VPC."
+  type        = string
+  nullable    = true
+  default     = null
+}
+
+variable "tgw_route" {
+  description = "The route (CIDR) to associate with the transite gateway."
+  type        = string
+  nullable    = true
+  default     = null
+  validation {
+    condition     = var.tgw == null || var.tgw_route != null
+    error_message = "A route must be specified for the transit gateway."
+  }
+}

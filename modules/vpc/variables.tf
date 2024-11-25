@@ -61,6 +61,3 @@ variable "nat_multi_az" {
     error_message = "You must enable NAT if you want to set multi AZ for NAT gateways."
   }
 }
-
-
-

@@ -11,8 +11,8 @@ module "cloudtrail" {
   bucket_name = module.audit_buckets.cloudtrail_bucket.id
 }
 
-module "cost" {
-  source   = "./modules/cost"
+module "opt_in" {
+  source   = "./modules/opt_in"
   id       = var.id
   aws_tags = var.aws_tags
 }

@@ -18,8 +18,6 @@ No providers.
 | <a name="module_cloudtrail"></a> [cloudtrail](#module\_cloudtrail) | ./modules/cloudtrail | n/a |
 | <a name="module_oidc"></a> [oidc](#module\_oidc) | ./modules/oidc | n/a |
 | <a name="module_opt_in"></a> [opt\_in](#module\_opt\_in) | ./modules/opt_in | n/a |
-| <a name="module_tgw"></a> [tgw](#module\_tgw) | ./modules/tgw | n/a |
-| <a name="module_vpc"></a> [vpc](#module\_vpc) | ./modules/vpc | n/a |
 
 ## Resources
 

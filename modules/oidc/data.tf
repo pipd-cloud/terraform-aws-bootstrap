@@ -30,6 +30,13 @@ data "aws_iam_policy" "github_managed_policies" {
   name     = each.value
 }
 
+data "aws_iam_policy_document" "github_custom_policy" {
+  statement {
+    actions   = ["iam:PassRole"]
+    resources = ["*"]
+  }
+}
+
 # Terraform
 data "tls_certificate" "terraform" {
   url = "https://app.terraform.io/.well-known/openid-configuration"
@@ -56,6 +63,5 @@ data "aws_iam_policy_document" "terraform_trust_policy" {
 }
 
 data "aws_iam_policy" "terraform_managed_policies" {
-  for_each = toset(["AdministratorAccess"])
-  name     = each.value
+  name = "AdministratorAccess"
 }

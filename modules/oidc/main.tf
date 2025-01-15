@@ -6,11 +6,40 @@ resource "aws_iam_openid_connect_provider" "github" {
   lifecycle {
     prevent_destroy = true
   }
+  tags = merge(var.aws_tags, {
+    Name = "GitHubActions"
+    TFID = var.id
+  })
 }
 
 resource "aws_iam_role" "github_role" {
   assume_role_policy = data.aws_iam_policy_document.github_trust_policy.json
   name               = "GitHubActionsRole"
+  lifecycle {
+    prevent_destroy = true
+  }
+  tags = merge(var.aws_tags, {
+    Name = "GitHubActionsRole"
+    TFID = var.id
+  })
+}
+
+resource "aws_iam_policy" "github_custom_policy" {
+  name        = "GitHubActionsCustomPolicy"
+  description = "Allows GitHub Actions to pass any role to any service"
+  policy      = data.aws_iam_policy_document.github_custom_policy.json
+  lifecycle {
+    prevent_destroy = true
+  }
+  tags = merge(var.aws_tags, {
+    Name = "GitHubActionsCustomPolicy"
+    TFID = var.id
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "github_custom_policy" {
+  role       = aws_iam_role.github_role.name
+  policy_arn = aws_iam_policy.github_custom_policy.arn
   lifecycle {
     prevent_destroy = true
   }
@@ -34,6 +63,10 @@ resource "aws_iam_openid_connect_provider" "terraform" {
   lifecycle {
     prevent_destroy = true
   }
+  tags = merge(var.aws_tags, {
+    Name = "TerraformCloud"
+    TFID = var.id
+  })
 }
 
 resource "aws_iam_role" "terraform_role" {
@@ -42,6 +75,10 @@ resource "aws_iam_role" "terraform_role" {
   lifecycle {
     prevent_destroy = true
   }
+  tags = merge(var.aws_tags, {
+    Name = "HCPTerraformRole"
+    TFID = var.id
+  })
 }
 
 resource "aws_iam_role_policy_attachment" "terraform_managed_policies" {

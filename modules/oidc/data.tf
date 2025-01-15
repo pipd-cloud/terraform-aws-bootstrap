@@ -26,8 +26,7 @@ data "aws_iam_policy_document" "github_trust_policy" {
 }
 
 data "aws_iam_policy" "github_managed_policies" {
-  for_each = toset(["PowerUserAccess"])
-  name     = each.value
+  name     = "PowerUserAccess"
 }
 
 data "aws_iam_policy_document" "github_custom_policy" {

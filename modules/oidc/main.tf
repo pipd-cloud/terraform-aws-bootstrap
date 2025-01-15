@@ -46,9 +46,8 @@ resource "aws_iam_role_policy_attachment" "github_custom_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "github_managed_policies" {
-  for_each   = data.aws_iam_policy.github_managed_policies
   role       = aws_iam_role.github_role.name
-  policy_arn = each.value.arn
+  policy_arn = data.aws_iam_policy.github_managed_policies.arn
   lifecycle {
     prevent_destroy = true
   }
@@ -82,9 +81,8 @@ resource "aws_iam_role" "terraform_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "terraform_managed_policies" {
-  for_each   = data.aws_iam_policy.terraform_managed_policies
   role       = aws_iam_role.terraform_role.name
-  policy_arn = each.value.arn
+  policy_arn = data.aws_iam_policy.terraform_managed_policies.arn
   lifecycle {
     prevent_destroy = true
   }

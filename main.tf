@@ -1,23 +1,26 @@
-module "audit_buckets" {
-  source   = "./modules/audit_buckets"
+module "logging" {
+  source   = "./modules/logging"
   id       = var.id
   aws_tags = var.aws_tags
 }
 
 module "cloudtrail" {
+  count       = var.cloudtrail_enabled ? 1 : 0
   source      = "./modules/cloudtrail"
   id          = var.id
   aws_tags    = var.aws_tags
-  bucket_name = module.audit_buckets.cloudtrail_bucket.id
+  bucket_name = module.logging.logs_bucket.bucket
 }
 
 module "opt_in" {
+  count    = var.opt_in_services_enabled ? 1 : 0
   source   = "./modules/opt_in"
   id       = var.id
   aws_tags = var.aws_tags
 }
 
 module "oidc" {
+  count                      = var.oidc_enabled ? 1 : 0
   source                     = "./modules/oidc"
   id                         = var.id
   aws_tags                   = var.aws_tags

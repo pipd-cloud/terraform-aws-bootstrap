@@ -1,6 +1,7 @@
+### IDE ###
+# Jetbrains
+.idea
 
-
-### Created by https://www.gitignore.io
 ### Terraform ###
 # Local .terraform directories
 **/.terraform/*

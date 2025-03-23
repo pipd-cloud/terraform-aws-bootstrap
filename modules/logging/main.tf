@@ -10,7 +10,7 @@ resource "aws_s3_bucket" "logs" {
   tags = merge(
     {
       Name = "${local.bucket_id}-logs-bucket"
-      TFID = "${var.id}"
+      TFID = var.id
     },
     var.aws_tags
   )
@@ -34,6 +34,9 @@ resource "aws_s3_bucket_lifecycle_configuration" "logs" {
   rule {
     id     = "expire"
     status = "Enabled"
+    filter {
+      prefix = ""
+    }
     expiration {
       days = 2556
     }

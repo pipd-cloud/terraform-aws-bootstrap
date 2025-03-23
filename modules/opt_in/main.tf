@@ -7,7 +7,12 @@ resource "aws_computeoptimizer_enrollment_status" "enable" {
 
 resource "aws_resourceexplorer2_index" "local" {
   type = "AGGREGATOR"
-  tags = var.aws_tags
+  tags = merge(var.aws_tags,
+    {
+      Name = "${var.id}-resource-explorer-index"
+      TFID = var.id
+    }
+  )
 }
 
 resource "aws_resourceexplorer2_view" "local" {
@@ -18,4 +23,14 @@ resource "aws_resourceexplorer2_view" "local" {
   included_property {
     name = "tags"
   }
+}
+
+resource "aws_accessanalyzer_analyzer" "external" {
+  analyzer_name = "${var.id}-external-access-analyzer"
+  tags = merge(var.aws_tags,
+    {
+      Name = "${var.id}-external-access-analyzer"
+      TFID = var.id
+    }
+  )
 }

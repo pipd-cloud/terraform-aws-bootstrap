@@ -28,6 +28,12 @@ variable "opt_in_services_enabled" {
 }
 
 ## OIDC
+variable "oidc_enabled" {
+  description = "Whether to enable OIDC support."
+  type        = bool
+  default     = false
+}
+
 variable "oidc_github_enabled" {
   description = "Whether to enable GitHub OIDC integration."
   type        = bool

@@ -20,7 +20,7 @@ module "opt_in" {
 }
 
 module "oidc_github" {
-  count             = var.oidc_github_enabled ? 1 : 0
+  count             = var.oidc_enabled || var.oidc_github_enabled ? 1 : 0
   source            = "./modules/oidc_provider_role"
   id                = var.id
   aws_tags          = var.aws_tags
@@ -46,7 +46,7 @@ module "oidc_github" {
 }
 
 module "oidc_hcp_terraform" {
-  count             = var.oidc_hcp_terraform_enabled ? 1 : 0
+  count             = var.oidc_enabled || var.oidc_hcp_terraform_enabled ? 1 : 0
   source            = "./modules/oidc_provider_role"
   id                = var.id
   aws_tags          = var.aws_tags
